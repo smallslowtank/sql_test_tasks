@@ -45,3 +45,18 @@ SELECT
   AS running_total
 FROM orders
 
+
+Или, например, так:
+-- answer
+SELECT
+  order_id,
+  customer_id,
+  order_date,
+  order_amount,
+  SUM(order_amount)
+    OVER(
+      PARTITION BY customer_id
+      ORDER BY order_date
+    )
+FROM orders
+
