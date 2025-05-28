@@ -1,0 +1,47 @@
+Дана таблица:
+'order_id' - идентификатор заказа
+'customer_id' - идентификатор клиента
+'order_date' - дата заказа
+'order_amount' - сумма заказа
+
+Написать запрос, который выводит следующую информацию для каждого заказа:
+'order_id' - идентификатор заказа
+'customer_id' - идентификатор клиента
+'order_date' - дата заказа
+'order_amount' - сумма заказа
+'running_total' - накопленная сумма заказов клиента (упорядоченных по дате)
+
+
+-- create
+CREATE TABLE orders (
+  order_id INTEGER PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  order_date DATE NOT NULL,
+  order_amount INTEGER NOT NULL
+);
+
+-- insert
+INSERT INTO orders VALUES (1, 101, '2024-01-01', 100);
+INSERT INTO orders VALUES (2, 101, '2024-01-05', 200);
+INSERT INTO orders VALUES (3, 102, '2024-01-03', 150);
+INSERT INTO orders VALUES (4, 101, '2024-01-10', 300);
+INSERT INTO orders VALUES (5, 102, '2024-01-15', 250);
+
+-- fetch 
+SELECT * FROM orders;
+
+--answer
+SELECT
+  order_id,
+  customer_id,
+  order_date,
+  order_amount,
+  SUM(order_amount)
+    OVER(
+      PARTITION BY customer_id
+      ORDER BY order_id
+      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    )
+  AS running_total
+FROM orders
+
