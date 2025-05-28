@@ -1,35 +1,34 @@
 Две таблицы: сотрудники и менеджеры. Нужно вывести список сотрудников и их менеджеров.
 
-
 -- create
-CREATE TABLE EMPLOYEES (
-  emploee_Id INTEGER PRIMARY KEY,
+CREATE TABLE employees (
+  emploee_id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   manager_id INTEGER
 );
-CREATE TABLE MANAGERS (
-  manager_Id INTEGER PRIMARY KEY,
+CREATE TABLE managers (
+  manager_id INTEGER PRIMARY KEY,
   name TEXT NOT NULL
 );
 
 -- insert
-INSERT INTO EMPLOYEES VALUES (1, 'Alice', NULL);
-INSERT INTO EMPLOYEES VALUES (2, 'Bob', 1);
-INSERT INTO EMPLOYEES VALUES (3, 'Charlie', 1);
-INSERT INTO EMPLOYEES VALUES (4, 'Diana', 2);
-INSERT INTO EMPLOYEES VALUES (5, 'Edvard', 2);
-INSERT INTO MANAGERS VALUES (1, 'M1');
-INSERT INTO MANAGERS VALUES (2, 'M2');
+INSERT INTO employees VALUES (1, 'Alice', NULL);
+INSERT INTO employees VALUES (2, 'Bob', 1);
+INSERT INTO employees VALUES (3, 'Charlie', 1);
+INSERT INTO employees VALUES (4, 'Diana', 2);
+INSERT INTO employees VALUES (5, 'Edvard', 2);
+INSERT INTO managers VALUES (1, 'M1');
+INSERT INTO managers VALUES (2, 'M2');
 
 -- fetch 
-SELECT * FROM EMPLOYEES;
-SELECT * FROM MANAGERS;
+SELECT * FROM employees;
+SELECT * FROM managers;
 
 --answer
-WITH EMPL_MNGR AS (
-SELECT emploee_Id, EMPLOYEES.name AS employee_name, MANAGERS.name AS manager_name
-FROM EMPLOYEES
-LEFT JOIN MANAGERS ON EMPLOYEES.manager_id = MANAGERS.manager_id
+WITH empl_mngr AS (
+SELECT emploee_id, employees.name AS employee_name, managers.name AS manager_name
+FROM employees
+LEFT JOIN managers ON employees.manager_id = managers.manager_id
 )
-SELECT * FROM EMPL_MNGR;
+SELECT * FROM empl_mngr;
 
