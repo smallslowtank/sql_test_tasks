@@ -1,0 +1,35 @@
+Две таблицы: сотрудники и менеджеры. Нужно вывести список сотрудников и их менеджеров.
+
+
+-- create
+CREATE TABLE EMPLOYEES (
+  emploee_Id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  manager_id INTEGER
+);
+CREATE TABLE MANAGERS (
+  manager_Id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+-- insert
+INSERT INTO EMPLOYEES VALUES (1, 'Alice', NULL);
+INSERT INTO EMPLOYEES VALUES (2, 'Bob', 1);
+INSERT INTO EMPLOYEES VALUES (3, 'Charlie', 1);
+INSERT INTO EMPLOYEES VALUES (4, 'Diana', 2);
+INSERT INTO EMPLOYEES VALUES (5, 'Edvard', 2);
+INSERT INTO MANAGERS VALUES (1, 'M1');
+INSERT INTO MANAGERS VALUES (2, 'M2');
+
+-- fetch 
+SELECT * FROM EMPLOYEES;
+SELECT * FROM MANAGERS;
+
+--answer
+WITH EMPL_MNGR AS (
+SELECT emploee_Id, EMPLOYEES.name AS employee_name, MANAGERS.name AS manager_name
+FROM EMPLOYEES
+LEFT JOIN MANAGERS ON EMPLOYEES.manager_id = MANAGERS.manager_id
+)
+SELECT * FROM EMPL_MNGR;
+
