@@ -1,0 +1,104 @@
+Дано:
+Таблица active_clients содержит ежемесячный срез клиентов банка, которые совершали какие-либо транзакции в данном месяце.
+Поля: отчетный месяц (report_month) и идентификатор клиента (client_id).
+Считаем, что клиент "оттек" из банка в месяце N, если в месяце N он активен (присутсвует в таблице active_clients) и не активен в месяцы N+1, N+2, N+3.
+Задание:
+Вывести количество активных клиентов на каждый месяц и долю клиентов, которые "оттекли" в каждом месяце.
+
+
+Код из видео (MySQL):
+
+-- create
+CREATE TABLE active_clients (
+  report_month DATE NOT NULL,
+  clietn_id INT NOT NULL
+);
+
+-- insert
+INSERT INTO active_clients VALUES ('2018-01-01', '1');
+INSERT INTO active_clients VALUES ('2018-01-01', '2');
+INSERT INTO active_clients VALUES ('2018-01-01', '3');
+INSERT INTO active_clients VALUES ('2018-02-01', '2');
+INSERT INTO active_clients VALUES ('2018-02-01', '4');
+INSERT INTO active_clients VALUES ('2018-03-01', '1');
+INSERT INTO active_clients VALUES ('2018-03-01', '2');
+INSERT INTO active_clients VALUES ('2018-04-01', '1');
+INSERT INTO active_clients VALUES ('2018-04-01', '2');
+INSERT INTO active_clients VALUES ('2018-04-01', '4');
+INSERT INTO active_clients VALUES ('2018-05-01', '1');
+INSERT INTO active_clients VALUES ('2018-05-01', '5');
+INSERT INTO active_clients VALUES ('2018-05-01', '2');
+
+-- answer
+WITH next_m AS (
+SELECT
+  *,
+  LEAD(report_month) OVER (
+    PARTITION BY clietn_id
+    ORDER BY report_month
+  ) AS next_m
+FROM active_clients
+),
+active_c AS (
+SELECT
+  report_month,
+  COUNT(clietn_id) AS count_ac,
+  SUM(
+    CASE WHEN
+      IFNULL(
+        PERIOD_DIFF(DATE_FORMAT(next_m, '%Y%m'), DATE_FORMAT(report_month, '%Y%m'))
+      , 4)
+    >=4 THEN 1 ELSE 0 END
+  ) AS churned
+FROM next_m
+GROUP BY report_month
+ORDER BY report_month
+)
+SELECT
+*
+FROM active_c;
+
+
+
+
+Решение взял из https://habr.com/ru/companies/joom/articles/708148/
+Код (MySQL):
+-- answer
+WITH clietn_month AS (
+  SELECT DISTINCT
+    report_month,
+    clietn_id,
+    -- находим дату следующей активности слиента
+    LEAD(
+      report_month
+    ) OVER(PARTITION BY clietn_id ORDER BY report_month) AS next_event_month
+  FROM active_clients
+),
+
+main AS (
+  SELECT
+    *,
+    -- находим, через сколько месяцев случилась следующая активность
+    PERIOD_DIFF(DATE_FORMAT(next_event_month, '%Y%m'), DATE_FORMAT(report_month, '%Y%m')) AS months_till_next_event
+  FROM clietn_month
+)
+
+SELECT
+report_month,
+COUNT(clietn_id) AS a_clients,
+-- считаем долю "оттока" в месяце
+COUNT(
+  IF(
+    months_till_next_event <= 3,
+    NULL,
+    clietn_id
+  )
+) / COUNT(clietn_id) AS churn_rate
+FROM main
+WHERE 1 = 1
+  -- срезаем строки, где не прошло 3 месяца до последней даты 
+    AND report_month <= (SELECT DATE_SUB(MAX(report_month), INTERVAL 3 MONTH) FROM active_clients)
+GROUP BY 1
+ORDER BY 1
+
+
