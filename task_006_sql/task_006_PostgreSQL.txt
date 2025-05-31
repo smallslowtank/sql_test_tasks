@@ -1,0 +1,61 @@
+Код для PostgreSQL:
+
+
+-- create
+CREATE TABLE active_clients (
+  report_month DATE NOT NULL,
+  clietn_id INT NOT NULL
+);
+
+-- insert
+INSERT INTO active_clients VALUES ('2018-01-01', '1');
+INSERT INTO active_clients VALUES ('2018-01-01', '2');
+INSERT INTO active_clients VALUES ('2018-01-01', '3');
+INSERT INTO active_clients VALUES ('2018-02-01', '2');
+INSERT INTO active_clients VALUES ('2018-02-01', '4');
+INSERT INTO active_clients VALUES ('2018-03-01', '1');
+INSERT INTO active_clients VALUES ('2018-03-01', '2');
+INSERT INTO active_clients VALUES ('2018-04-01', '1');
+INSERT INTO active_clients VALUES ('2018-04-01', '2');
+INSERT INTO active_clients VALUES ('2018-04-01', '4');
+INSERT INTO active_clients VALUES ('2018-05-01', '1');
+INSERT INTO active_clients VALUES ('2018-05-01', '5');
+INSERT INTO active_clients VALUES ('2018-05-01', '2');
+
+-- answer
+WITH clietn_month AS (
+  SELECT DISTINCT
+    report_month,
+    clietn_id,
+    -- находим дату следующей активности слиента
+    LEAD(
+      report_month
+    ) OVER(PARTITION BY clietn_id ORDER BY report_month) AS next_event_month
+  FROM active_clients
+),
+
+main AS (
+  SELECT
+    *,
+    -- находим, через сколько месяцев случилась следующая активность
+    EXTRACT(MONTH FROM AGE(next_event_month, report_month)) AS months_till_next_event
+  FROM clietn_month
+)
+
+SELECT
+    report_month,
+    -- находим долю пользователей,
+    -- которые отсутствовали не меньше 3 месяцев 
+    (COUNT(CASE
+            WHEN months_till_next_event < 4 THEN NULL
+            ELSE clietn_id END
+          )::decimal(4,2)
+    /COUNT(clietn_id)
+    )::decimal(4,2) AS churn_rate
+FROM main
+WHERE 1 = 1
+    -- срезаем строки, где не прошло 3 месяцев до последней даты в таблице
+    AND report_month <= (SELECT (MAX(report_month) - interval '3 MONTH') FROM main)
+GROUP BY 1
+ORDER BY 1
+
