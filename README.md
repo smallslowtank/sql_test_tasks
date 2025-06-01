@@ -1,8 +1,8 @@
-### Тестовые задания по SQL
+### Тестовые задания по SQL и pandas
 
 Задания с просторов Интернета, в которых я пытался разобраться.
 
-OneCompiler https://onecompiler.com/
+Полезная штука: OneCompiler https://onecompiler.com/
 
 Tasks 1-4 https://www.youtube.com/watch?v=UkywFTVvuSo
 
